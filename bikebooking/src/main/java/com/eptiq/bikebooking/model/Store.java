@@ -1,8 +1,14 @@
 package com.eptiq.bikebooking.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
 
 @Entity
+@Getter
+@Setter
 @Table(name="stores")
 public class Store {
 
@@ -14,53 +20,11 @@ public class Store {
     private String address;
     private String storeContactNumber;
     private String storeGoogleMapUrl;
+    private String city;
+    @Lob
     private String storeImage;
 
-    public Long getId() {
-        return id;
-    }
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bike> bikes;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getStoreName() {
-        return storeName;
-    }
-
-    public void setStoreName(String storeName) {
-        this.storeName = storeName;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getStoreContactNumber() {
-        return storeContactNumber;
-    }
-
-    public void setStoreContactNumber(String storeContactNumber) {
-        this.storeContactNumber = storeContactNumber;
-    }
-
-    public String getStoreGoogleMapUrl() {
-        return storeGoogleMapUrl;
-    }
-
-    public void setStoreGoogleMapUrl(String storeGoogleMapUrl) {
-        this.storeGoogleMapUrl = storeGoogleMapUrl;
-    }
-
-    public String getStoreImage() {
-        return storeImage;
-    }
-
-    public void setStoreImage(String storeImage) {
-        this.storeImage = storeImage;
-    }
 }

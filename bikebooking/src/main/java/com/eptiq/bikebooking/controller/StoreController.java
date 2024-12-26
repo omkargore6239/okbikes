@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/stores")
 public class StoreController {
 
@@ -55,6 +54,7 @@ public class StoreController {
         store.setStoreContactNumber(storeDetails.getStoreContactNumber());
         store.setStoreGoogleMapUrl(storeDetails.getStoreGoogleMapUrl());
         store.setStoreImage(storeDetails.getStoreImage());
+        store.setCity(storeDetails.getCity());
 
         Store updatedStore = storeService.save(store);
         return ResponseEntity.ok(updatedStore);

@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/bikes")
 public class BikeController {
 
@@ -68,4 +67,10 @@ public class BikeController {
         bikeService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+//    //to get the bikes by city
+//    @GetMapping("/city/{city}")
+//    public List<Bike> getBikesByCity(@PathVariable String city) {
+//        return bikeService.findBikesByCity(city);
+//    }
 }

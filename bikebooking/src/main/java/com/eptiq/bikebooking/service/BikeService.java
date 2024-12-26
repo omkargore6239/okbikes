@@ -29,4 +29,8 @@ public class BikeService {
     public void deleteById(Long id){
         bikeRepository.deleteById(id);
     }
+
+    public List<Bike> findBikesByCity(String city) {
+        return bikeRepository.findBikesByCity(city);
+    }
 }

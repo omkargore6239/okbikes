@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
-
 const AllOffers = () => {
   const [data, setData] = useState([]);
   const [statuses, setStatuses] = useState([]);
@@ -122,9 +121,15 @@ const AllOffers = () => {
   };
 
   // Filtered data based on search query
-  const filteredData = data.filter(
-    (item) => item.offerName.toLowerCase().includes(searchQuery.toLowerCase()) // Fix here
-  );
+  const filteredData = data.filter((item) => {
+    console.log("Current item being checked:", item); // Log the current item
+    if (!item.offerName) {
+      console.log("Item skipped because category is null or undefined:", item);
+      return false; // Exclude items with a null or undefined category
+    }
+    return item.offerName.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+  
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -395,7 +400,7 @@ const AllOffers = () => {
             <div className="flex items-center">
               <input
                 type="text"
-                placeholder="Search by offer Name..."
+                placeholder="Search..."
                 className="border border-gray-300 rounded-l px-8 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

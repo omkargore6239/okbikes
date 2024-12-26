@@ -2,6 +2,19 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
 
+function convertImageToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.onerror = (error) => {
+      reject(error);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 const Bikes = () => {
   const [data, setData] = useState([]);
   const [statuses, setStatuses] = useState([]);
@@ -129,9 +142,16 @@ const Bikes = () => {
   };
 
   // Filtered data based on search query
-  const filteredData = data.filter((item) =>
-    item.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredData = data.filter((item) => {
+    console.log("Current item being checked:", item); // Log the current item
+    if (!item.category) {
+      console.log("Item skipped because category is null or undefined:", item);
+      return false; // Exclude items with a null or undefined category
+    }
+    return item.category.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+  
+  
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -224,7 +244,10 @@ const Bikes = () => {
                   placeholder="Enter Vehicle Registration Number"
                   value={formData.vehicleRegistrationNumber}
                   onChange={(e) =>
-                    setFormData({...formData, vehicleRegistrationNumber: e.target.value})
+                    setFormData({
+                      ...formData,
+                      vehicleRegistrationNumber: e.target.value,
+                    })
                   }
                   className="border p-2 rounded w-full"
                 />
@@ -239,7 +262,7 @@ const Bikes = () => {
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      registrationYear: e.target.value
+                      registrationYear: e.target.value,
                     })
                   }
                   className="border p-2 rounded w-full"
@@ -255,7 +278,7 @@ const Bikes = () => {
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      vehicleChassisNumber: e.target.value
+                      vehicleChassisNumber: e.target.value,
                     })
                   }
                   className="border p-2 rounded w-full"
@@ -297,14 +320,35 @@ const Bikes = () => {
                   type="file"
                   name="puc"
                   className="w-full border border-gray-300 p-2 rounded"
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      puc: e.target.files[0],
-                    })
-                  }
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      try {
+                        const base64String = await convertImageToBase64(file);
+                        console.log("Base64:", base64String);
+                        setFormData({
+                          ...formData,
+                          puc: base64String,
+                        });
+                      } catch (error) {
+                        console.error("Error converting image:", error);
+                      }
+                    }
+                  }}
                 />
+                {formData.puc && (
+                  <div className="mt-2">
+                    <div className="w-[90px] h-[90px] border border-gray-300 rounded flex items-center justify-center overflow-hidden">
+                      <img
+                        src={formData.puc}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
+
               <div className="mb-4">
                 <label className="block mb-2 font-medium">
                   Upload Insurance
@@ -313,13 +357,33 @@ const Bikes = () => {
                   type="file"
                   name="insurance"
                   className="w-full border border-gray-300 p-2 rounded"
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      insurance: e.target.files[0],
-                    })
-                  }
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      try {
+                        const base64String = await convertImageToBase64(file);
+                        console.log("Base64:", base64String);
+                        setFormData({
+                          ...FormData,
+                          insurance: base64String,
+                        });
+                      } catch (error) {
+                        console.error("Error converting image:", error);
+                      }
+                    }
+                  }}
                 />
+                {formData.insurance && (
+                  <div className="mt-2">
+                    <div className="w-[90px] h-[90px] border border-gray-300 rounded flex items-center justify-center overflow-hidden">
+                      <img
+                        src={formData.insurance}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="mb-4">
                 <label className="block mb-2 font-medium">
@@ -329,13 +393,33 @@ const Bikes = () => {
                   type="file"
                   name="document"
                   className="w-full border border-gray-300 p-2 rounded"
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      document: e.target.files[0],
-                    })
-                  }
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      try {
+                        const base64String = await convertImageToBase64(file);
+                        console.log("Base64:", base64String);
+                        setFormData({
+                          ...formData,
+                          document: base64String,
+                        });
+                      } catch (error) {
+                        console.error("Error converting image:", error);
+                      }
+                    }
+                  }}
                 />
+                {formData.document && (
+                  <div className="mt-2">
+                    <div className="w-[90px] h-[90px] border border-gray-300 rounded flex items-center justify-center overflow-hidden">
+                      <img
+                        src={formData.document}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="mb-4">
                 <label className="block mb-2 font-medium">
@@ -345,13 +429,33 @@ const Bikes = () => {
                   type="file"
                   name="vehicleImage"
                   className="w-full border border-gray-300 p-2 rounded"
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      vehicleImage: e.target.files[0],
-                    })
-                  }
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      try {
+                        const base64String = await convertImageToBase64(file);
+                        console.log("Base64:", base64String);
+                        setFormData({
+                          ...formData,
+                          vehicleImage: base64String,
+                        });
+                      } catch (error) {
+                        console.error("Error converting image:", error);
+                      }
+                    }
+                  }}
                 />
+                {formData.vehicleImage && (
+                  <div className="mt-2">
+                    <div className="w-[90px] h-[90px] border border-gray-300 rounded flex items-center justify-center overflow-hidden">
+                      <img
+                        src={formData.vehicleImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -408,9 +512,9 @@ const Bikes = () => {
                   <th scope="col" className="px-6 py-3">
                     Vehicle Registration Number
                   </th>
-                  <th scope="col" className="px-6 py-3">
+                  {/* <th scope="col" className="px-6 py-3">
                     Added By
-                  </th>
+                  </th> */}
                   <th scope="col" className="px-6 py-3">
                     Status
                   </th>
@@ -442,8 +546,10 @@ const Bikes = () => {
                       <td className="px-6 py-4">{bike.brandName}</td>
                       <td className="px-6 py-4">{bike.category}</td>
                       <td className="px-6 py-4">{bike.modelName}</td>
-                      <td className="px-6 py-4">{bike.vehicleRegistrationNumber}</td>
-                      <td className="px-6 py-4">{bike.addedBy}</td>
+                      <td className="px-6 py-4">
+                        {bike.vehicleRegistrationNumber}
+                      </td>
+                      {/* <td className="px-6 py-4">{bike.addedBy}</td> */}
                       <td className="px-6 py-4">
                         <button
                           className={`px-2 py-1 rounded ${

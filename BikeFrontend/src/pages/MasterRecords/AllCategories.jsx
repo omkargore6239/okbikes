@@ -2,6 +2,20 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
+
+function convertImageToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.onerror = (error) => {
+      reject(error);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 const AllCategories = () => {
   const [data, setData] = useState([]);
   const [statuses, setStatuses] = useState([]);
@@ -158,19 +172,39 @@ const AllCategories = () => {
                 />
               </div>
 
-              <div className="mb-4">
+             <div className="mb-4">
                 <label className="block mb-2 font-medium">Image</label>
                 <input
                   type="file"
-                  name="Image"
+                  name="image"
                   className="w-full border border-gray-300 p-2 rounded"
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      image: e.target.files[0],
-                    })
-                  }
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      try {
+                        const base64String = await convertImageToBase64(file);
+                        console.log("Base64:", base64String);
+                        setFormData({
+                          ...formData,
+                          image: base64String,
+                        });
+                      } catch (error) {
+                        console.error("Error converting image:", error);
+                      }
+                    }
+                  }}
                 />
+                {formData.image && (
+                  <div className="mt-2">
+                    <div className="w-[90px] h-[90px] border border-gray-300 rounded flex items-center justify-center overflow-hidden">
+                      <img
+                        src={formData.image}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -246,7 +280,21 @@ const AllCategories = () => {
                       className="bg-white border-b hover:bg-gray-50"
                     >
                       <td className="px-6 py-3">{category.id}</td>
-                      <td className="px-6 py-4">{category.image}</td>
+                      <td className="px-6 py-4">
+                        {category.image ? (
+                          <img
+                            src={category.image}
+                            alt="Uploaded Base64"
+                            style={{
+                              width: "80px",
+                              height: "80px",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          "-"
+                        )}
+                      </td>
                       <td className="px-6 py-4">{category.categoryName}</td>
                       <td className="px-6 py-4">
                         <button

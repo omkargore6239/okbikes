@@ -1,6 +1,20 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
+import apiClient from "../api/apiConfig";
+
+function convertImageToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.onerror = (error) => {
+      reject(error);
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 const StoreMaster = () => {
   const [data, setData] = useState([]);
@@ -15,6 +29,7 @@ const StoreMaster = () => {
     storeContactNumber: "",
     address: "",
     storeGoogleMapUrl: "",
+    city:"",
     storeImage: " ",
   });
   const [loading, setLoading] = useState(true);
@@ -25,9 +40,10 @@ const StoreMaster = () => {
     const fetchStores = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          "http://localhost:8080/api/stores/list"
-        );
+        // const response = await axios.get(
+        // "http://localhost:8080/api/stores/list"
+        // );
+        const response = await apiClient.get("/stores/list");
         setData(response.data);
         setStatuses(
           response.data.map((item) => ({ id: item.id, status: "Active" }))
@@ -44,9 +60,10 @@ const StoreMaster = () => {
   //Add Store
   const handledAddStore = (e) => {
     e.preventDefault();
-
-    axios
-      .post("http://localhost:8080/api/stores/save", formData)
+    console.log(formData);
+    axios;
+    apiClient
+      .post("/stores/save", formData)
       .then((response) => {
         setData([...data, response.data]);
         resetForm();
@@ -57,8 +74,9 @@ const StoreMaster = () => {
   //Save Edit
   const handleSaveEdit = (e) => {
     e.preventDefault();
-    axios
-      .put(`http://localhost:8080/api/stores/${editingId}`, formData)
+    axios;
+    apiClient
+      .put(`/stores/${editingId}`, formData)
       .then((response) => {
         setData(
           data.map((store) => (store.id === editingId ? response.data : store))
@@ -76,15 +94,18 @@ const StoreMaster = () => {
       storeContactNumber: store.storeContactNumber,
       address: store.address,
       storeGoogleMapUrl: store.storeGoogleMapUrl,
+      city:store.city,
       storeImage: store.storeImage,
+
     });
     setFormVisible(true);
   };
 
   //Delete Store
   const handleDeleteStore = (id) => {
-    axios
-      .delete(`http://localhost:8080/api/stores/${id}`)
+    axios;
+    apiClient
+      .delete(`/stores/${id}`)
       .then(() => setData(data.filter((store) => store.id !== id)))
       .catch((error) => console.error("Error deleting data:", error))
       .finally(() => setConfirmDeleteId(null));
@@ -98,6 +119,7 @@ const StoreMaster = () => {
       storeContactNumber: "",
       address: "",
       storeGoogleMapUrl: "",
+      city:" ",
       storeImage: "",
     });
     setFormVisible(false);
@@ -205,7 +227,21 @@ const StoreMaster = () => {
                       storeGoogleMapUrl: e.target.value,
                     })
                   }
-                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2 font-medium">City</label>
+                <input
+                  type="text"
+                  name="city"
+                  className="w-full border border-gray-300 p-2 rounded"
+                  value={formData.city}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      city: e.target.value,
+                    })
+                  }
                 />
               </div>
               <div className="mb-4">
@@ -214,13 +250,33 @@ const StoreMaster = () => {
                   type="file"
                   name="storeImage"
                   className="w-full border border-gray-300 p-2 rounded"
-                  onChange={(e) =>
-                    setFormData({
-                      ...setFormData,
-                      storeImage: e.target.files[0],
-                    })
-                  }
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      try {
+                        const base64String = await convertImageToBase64(file);
+                        console.log("Base64:", base64String);
+                        setFormData({
+                          ...formData,
+                          storeImage: base64String,
+                        });
+                      } catch (error) {
+                        console.error("Error converting image:", error);
+                      }
+                    }
+                  }}
                 />
+                {formData.storeImage && (
+                  <div className="mt-2">
+                    <div className="w-[90px] h-[90px] border border-gray-300 rounded flex items-center justify-center overflow-hidden">
+                      <img
+                        src={formData.storeImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -306,7 +362,22 @@ const StoreMaster = () => {
                       className="bg-white border-b hover:bg-gray-50"
                     >
                       <td className="px-6 py-4">{store.id}</td>
-                      <td className="px-6 py-4">{store.storeImage}</td>
+                      <td className="px-6 py-4">
+                        {store.storeImage ? (
+                          <img
+                            src={store.storeImage}
+                            alt="Uploaded Base64"
+                            style={{
+                              width: "80px",
+                              height: "80px",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+
                       <td className="px-6 py-4">{store.storeName}</td>
                       <td className="px-6 py-4">{store.storeContactNumber}</td>
                       <td className="px-6 py-4">
@@ -343,11 +414,12 @@ const StoreMaster = () => {
                           <FaEdit className="mr-2" />
                           Edit
                         </button>
-                        <button className="px-4 py-2 text-white bg-red-800 hover:bg-red-600 rounded"
-                              onClick={()=>setConfirmDeleteId(store.id)}
-                      >
-                        Delete
-                      </button>
+                        <button
+                          className="px-4 py-2 text-white bg-red-800 hover:bg-red-600 rounded"
+                          onClick={() => setConfirmDeleteId(store.id)}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))

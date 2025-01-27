@@ -76,6 +76,17 @@ const AuthPopup = ({ isOpen, onClose, onLogin }) => {
     setNotification({ message: "Login successful!", type: "success" });
   };
 
+  const handleSendOTP = () => {
+    // Add your OTP sending logic here
+    alert("OTP sent successfully.");
+  };
+
+  const handleVerifyOTP = () => {
+    // Add your OTP verification logic here
+    alert("OTP verification initiated.");
+  };
+
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -156,18 +167,46 @@ const AuthPopup = ({ isOpen, onClose, onLogin }) => {
             </>
           )}
 
+<div>
+    <label className="block text-sm font-medium">Contact Number</label>
+    <input
+      type="tel"
+      name="contactNumber"
+      value={formData.contactNumber}
+      onChange={handleChange}
+      maxLength="10"
+      className="w-full p-2 border border-gray-300 rounded text-sm"
+      required
+    />
+    <a
+      href="#"
+      onClick={handleSendOTP}
+      className="text-blue-500 text-sm mt-2 inline-block cursor-pointer"
+    >
+      Send OTP
+    </a>
+  </div>
+
           <div>
-            <label className="block text-sm font-medium">Contact Number</label>
-            <input
-              type="tel"
-              name="contactNumber"
-              value={formData.contactNumber}
-              onChange={handleChange}
-              maxLength="10"
-              className="w-full p-2 border border-gray-300 rounded text-sm"
-              required
-            />
-          </div>
+  <label className="block text-sm font-medium">Enter OTP</label>
+  <input
+    type="tel"
+    name="contactNumber"
+    value={formData.contactNumber}
+    onChange={handleChange}
+    maxLength="10"
+    className="w-full p-2 border border-gray-300 rounded text-sm"
+    required
+  />
+  <a
+      href="#"
+      onClick={handleVerifyOTP}
+      className="text-blue-500 text-sm mt-2 inline-block cursor-pointer"
+    >
+      Verify OTP
+    </a>
+</div>
+
 
           {isLogin && !otpSent && (
             <button
@@ -190,7 +229,7 @@ const AuthPopup = ({ isOpen, onClose, onLogin }) => {
                 maxLength="6"
                 className="w-full p-2 border border-gray-300 rounded text-sm"
                 required
-              />
+              />  
             </div>
           )}
 

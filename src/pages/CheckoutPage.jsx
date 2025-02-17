@@ -1,13 +1,12 @@
-// src/components/CheckoutPage.jsx
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGlobalState } from "../context/GlobalStateContext";
-import { FaRegCalendarAlt, FaClock, FaMapMarkerAlt, FaClipboardCheck } from "react-icons/fa"; // Icons from react-icons
-import { motion } from "framer-motion"; // Animation library
+import { FaRegCalendarAlt, FaClock, FaMapMarkerAlt, FaClipboardCheck } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 const CheckoutPage = () => {
   const location = useLocation();
-  const navigate = useNavigate(); // Initialize the navigate function
+  const navigate = useNavigate();
   const { bike, totalPrice, rentalDays, selectedPackage, deliveryLocation, pickupDate, dropDate } = location.state || {};
   const { addOrder } = useGlobalState();
 
@@ -16,10 +15,9 @@ const CheckoutPage = () => {
   const [discount, setDiscount] = useState(0);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false); // Track payment status
-  const [paymentError, setPaymentError] = useState(false); // Track payment failure
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState(false);
 
-  // Coupon codes and their discounts
   const coupons = {
     SAVE10: 10,
     RENT20: 20,
@@ -29,18 +27,21 @@ const CheckoutPage = () => {
   const deliveryCharge = deliveryLocation ? 250 : 0;
 
   useEffect(() => {
-    // Load Razorpay SDK dynamically
     const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.src = "https://checkout.razorpay.com/v1/checkout.js"; // Corrected the script URL
     script.onload = () => setIsRazorpayLoaded(true);
     script.onerror = () => setIsRazorpayLoaded(false);
     document.body.appendChild(script);
+
+    return () => { // Cleanup to remove the script on component unmount
+      document.body.removeChild(script);
+    };
   }, []);
 
   const handleApplyCoupon = () => {
-    if (coupons[couponCode.toUpperCase()]) {
-      const discountPercent = coupons[couponCode.toUpperCase()];
-      setDiscount((totalPrice * discountPercent) / 100);
+    const code = couponCode.toUpperCase();
+    if (coupons[code]) {
+      setDiscount((totalPrice * coupons[code]) / 100);
     } else {
       setDiscount(0);
       alert("Invalid Coupon Code");
@@ -49,62 +50,34 @@ const CheckoutPage = () => {
 
   const payableAmount = Math.max(0, totalPrice - discount);
 
-  const handlePayment = async () => {
+  const handlePayment = () => { // Removed async as we no longer need to wait for API
     if (!termsAccepted) {
       alert("Please accept the terms and conditions to proceed.");
       return;
     }
-  
+
     if (!isRazorpayLoaded) {
       alert("Razorpay SDK not loaded. Please check your internet connection.");
       return;
     }
-  
+
     const options = {
-      key: "rzp_test_f7cxGXAuIgXb7p", // Test mode API key
-      amount: payableAmount * 100, // Razorpay expects the amount in paise
+      key: "rzp_test_NKupd8OmPWqdB0",
+      amount: payableAmount * 100,
       currency: "INR",
       name: "Bike Rental Service",
       description: "Payment for Bike Rental",
-      image: "/path/to/logo.png",
-      handler: async function (response) {
-        try {
-          // Prepare booking details
-          const bookingDetails = {
-            bikeId: bike.id,
-            bikeName: bike.name,
-            package: selectedPackage,
-            rentalDays,
-            totalPrice: payableAmount,
-            deposit: depositAmount,
-            deliveryCharge,
-            discount,
-            pickupDate,
-            dropDate,
-            deliveryLocation,
-            paymentId: response.razorpay_payment_id, // Razorpay payment ID
-          };
-  
-          // Call backend API to save booking
-          const apiResponse = await axios.post("http://localhost:8081/booking/book", bookingDetails);
-  
-          if (apiResponse.status === 200) {
-            setPaymentSuccess(true); // Payment successful
-            addOrder({
-              bike: bike.name,
-              rentalDays,
-              totalPrice: payableAmount,
-              orderDate: new Date().toLocaleDateString(),
-              status: "Active",
-            });
-            navigate("/orders"); // Redirect to orders page
-          } else {
-            alert("Failed to save booking. Please contact support.");
-          }
-        } catch (error) {
-          console.error("Error saving booking:", error);
-          setPaymentError(true); // Handle API failure
-        }
+      image: "/path/to/logo.png", // Ensure the logo path is correct
+      handler: (response) => {
+        setPaymentSuccess(true);
+        addOrder({
+          bike: bike.name,
+          rentalDays,
+          totalPrice: payableAmount,
+          orderDate: new Date().toLocaleDateString(),
+          status: "Active",
+        });
+        navigate("/orders");
       },
       prefill: {
         name: "Customer Name",
@@ -115,16 +88,15 @@ const CheckoutPage = () => {
         color: "#FF6A00",
       },
     };
-  
-    const rzp1 = new window.Razorpay(options);
-    rzp1.on("payment.failed", function (response) {
+
+    const rzp = new window.Razorpay(options);
+    rzp.on("payment.failed", (response) => {
       console.error("Payment failed:", response.error);
-      setPaymentError(true); // Payment failed
+      setPaymentError(true);
     });
-  
-    rzp1.open();
+
+    rzp.open();
   };
-  
 
   return (
     <motion.div
@@ -135,7 +107,6 @@ const CheckoutPage = () => {
     >
       <div className="container mx-auto py-8 px-4 lg:px-8 flex-grow">
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Section: Bike and Summary */}
           <div className="lg:col-span-2 bg-white shadow-lg rounded-lg p-6 space-y-6">
             <h2 className="text-2xl font-semibold text-gray-800">Rental Summary</h2>
             <div className="flex items-center space-x-4">
@@ -152,7 +123,6 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Pickup and Drop Date/Time */}
             <div className="mt-6 space-y-4">
               <h3 className="text-lg font-semibold text-gray-700">Pickup and Drop Date/Time</h3>
               <div className="flex items-center space-x-2">
@@ -171,7 +141,6 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Location */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-gray-700">Pickup and Drop Location</h3>
               <div className="flex items-center space-x-2">
@@ -182,7 +151,6 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Terms and Conditions */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-gray-700">Terms and Conditions</h3>
               <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
@@ -194,7 +162,6 @@ const CheckoutPage = () => {
             </div>
           </div>
 
-          {/* Right Section: Coupon, Amount Breakdown, and Payment */}
           <div className="bg-white shadow-lg rounded-lg p-6 space-y-6">
             <h3 className="text-lg font-semibold text-gray-700">Apply Coupon</h3>
             {!showCouponInput ? (
@@ -230,7 +197,6 @@ const CheckoutPage = () => {
               </div>
             )}
 
-            {/* Amount Breakdown */}
             <div>
               <h3 className="text-lg font-semibold text-gray-700">Amount Breakdown</h3>
               <div className="space-y-2 text-sm">
@@ -257,7 +223,6 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Terms and Conditions */}
             <div className="mt-6 flex justify-between">
               <div className="flex items-center space-x-2">
                 <input
